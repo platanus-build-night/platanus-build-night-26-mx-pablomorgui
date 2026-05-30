@@ -112,30 +112,34 @@ function buildDailyPrices(dailyData: Map<string, Map<string, number[]>>): DailyP
 }
 
 function buildTrends(dailyPrices: DailyPricePoint[]): CategoryTrend[] {
-  const halfPoint = Math.floor(dailyPrices.length / 2);
-  const firstHalf = dailyPrices.slice(0, Math.max(1, halfPoint));
-  const secondHalf = dailyPrices.slice(Math.max(1, halfPoint));
+  if (dailyPrices.length < 2) {
+    return [
+      { category: 'CAT 1', currentMedian: null, previousMedian: null, changePercent: null, direction: null },
+      { category: 'CAT 2', currentMedian: null, previousMedian: null, changePercent: null, direction: null },
+      { category: 'CAT 3', currentMedian: null, previousMedian: null, changePercent: null, direction: null },
+    ];
+  }
+
+  const firstDay = dailyPrices[0]!;
+  const lastDay = dailyPrices[dailyPrices.length - 1]!;
 
   function getTrend(category: 'cat1' | 'cat2' | 'cat3', label: string): CategoryTrend {
-    const firstPrices = firstHalf.map(d => d[category]).filter((p): p is number => p !== null);
-    const secondPrices = secondHalf.map(d => d[category]).filter((p): p is number => p !== null);
+    const firstPrice = firstDay[category];
+    const lastPrice = lastDay[category];
 
-    const prevMedian = calculateMedian(firstPrices);
-    const currMedian = calculateMedian(secondPrices);
-
-    if (prevMedian === null || currMedian === null) {
-      return { category: label, currentMedian: currMedian, previousMedian: prevMedian, changePercent: null, direction: null };
+    if (firstPrice === null || lastPrice === null) {
+      return { category: label, currentMedian: lastPrice, previousMedian: firstPrice, changePercent: null, direction: null };
     }
 
-    const change = ((currMedian - prevMedian) / prevMedian) * 100;
+    const change = ((lastPrice - firstPrice) / firstPrice) * 100;
     let direction: 'up' | 'down' | 'stable' = 'stable';
     if (change > 5) direction = 'up';
     else if (change < -5) direction = 'down';
 
     return {
       category: label,
-      currentMedian: currMedian,
-      previousMedian: prevMedian,
+      currentMedian: lastPrice,
+      previousMedian: firstPrice,
       changePercent: Math.round(change),
       direction,
     };
