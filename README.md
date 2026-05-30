@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pablo Andrés Morales Guillaux — Platanus Build Night — Ciudad de México Project
 
-## Getting Started
+**Current project logo:** project-logo.png
 
-First, run the development server:
+<img src="./project-logo.png" alt="Project Logo" width="200" />
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Hacker:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Pablo Andrés Morales Guillaux ([@pablomorgui](https://github.com/pablomorgui))
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Before submitting:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- ✅ Set a project name, oneliner and description in build-night-project.json
+- ✅ Provide a 1000x1000 png project logo, max 500kb (project-logo.png)
+- ✅ Provide a concise and to the point readme
 
-## Learn More
+## ⚠️ Deploying (Vercel, Render, etc.)
 
-To learn more about Next.js, take a look at the following resources:
+Deploy platforms like **Vercel**, **Render** or **Netlify** can only connect to
+repositories **you own** — they can't be granted access to this organization repo.
+To deploy while keeping your commits here, mirror your code to a personal repo:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Create a **personal** repository on your own GitHub account.
+2. Point your local `origin` at **both** repos, so a single `git push` updates each one:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   # this org repo (keep it as a push target)...
+   git remote set-url --add --push origin https://github.com/platanus-build-night/platanus-build-night-26-mx-pablomorgui.git
+   # ...and your personal repo
+   git remote set-url --add --push origin https://github.com/<your-user>/<your-repo>.git
+   ```
 
-## Deploy on Vercel
+   From now on `git push` sends every commit to **both** repositories.
+3. Connect your deploy service (Vercel, Render, …) to your **personal** repo and deploy from there.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Your commits stay mirrored here for judging, while the deploy runs from the repo you control.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Have fun! 🚀
