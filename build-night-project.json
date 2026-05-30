@@ -1,5 +1,5 @@
 {
-  "project-name": "<FILL THIS>",
-  "project-oneliner": "<FILL THIS>",
-  "project-description": "<FILL THIS>"
+  "project-name": "Mundialin",
+  "project-oneliner": "Portal de inteligencia de precios para boletos del Mundial 2026",
+  "project-description": "Mundialin es un portal que muestra precios de mercado de boletos del Mundial 2026, extraídos automáticamente de grupos de WhatsApp. Los usuarios pueden explorar los 104 partidos, ver medianas y tendencias de precios por categoría (CAT 1, 2, 3), filtrar por sede/fase/equipo, y configurar alertas para recibir notificaciones cuando el precio baje de su umbral. También incluye un portal para vendedores premium que gestionan sus ofertas."
 }
