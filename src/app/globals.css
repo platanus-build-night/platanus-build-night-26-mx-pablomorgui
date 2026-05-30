@@ -1,0 +1,76 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Neobrutalist palette */
+  --color-background: #FEFCF9;
+  --color-foreground: #000000;
+  --color-muted: #F5F2ED;
+  --color-muted-foreground: #666666;
+  --color-border: #000000;
+  --color-input: #000000;
+  --color-ring: #000000;
+
+  /* Primary: mostaza */
+  --color-primary: #FFDB58;
+  --color-primary-foreground: #000000;
+
+  /* Secondary: mostaza claro */
+  --color-secondary: #FEF08A;
+  --color-secondary-foreground: #000000;
+
+  /* Accent: azul electrico */
+  --color-accent: #2563EB;
+  --color-accent-foreground: #FFFFFF;
+
+  /* States */
+  --color-destructive: #DC2626;
+  --color-destructive-foreground: #FFFFFF;
+  --color-success: #22C55E;
+  --color-warning: #FFDB58;
+
+  /* Neobrutalist radius */
+  --radius: 6px;
+
+  /* Typography */
+  --font-display: 'Sora', sans-serif;
+  --font-sans: 'Manrope', sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #000;
+  border: 2px solid var(--color-muted);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: var(--color-primary);
+  color: #000;
+}
