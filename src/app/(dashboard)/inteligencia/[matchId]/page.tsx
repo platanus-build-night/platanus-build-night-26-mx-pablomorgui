@@ -8,6 +8,8 @@ import { PriceTab } from './price-tab';
 import { AlertsTab } from './alerts-tab';
 import { TabSwitcher } from './tab-switcher';
 
+export const dynamic = 'force-dynamic';
+
 type PageProps = {
   params: Promise<{ matchId: string }>;
   searchParams: Promise<{ days?: string; tab?: string }>;

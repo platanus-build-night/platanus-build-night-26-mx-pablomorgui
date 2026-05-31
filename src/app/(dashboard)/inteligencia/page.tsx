@@ -4,6 +4,8 @@ import { getTeamNameEs } from '@/lib/constants';
 import { Filters } from './filters';
 import { MatchCard } from './match-card';
 
+export const dynamic = 'force-dynamic';
+
 type PageProps = {
   searchParams: Promise<{
     city?: string;

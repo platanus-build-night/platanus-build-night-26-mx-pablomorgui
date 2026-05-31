@@ -204,7 +204,7 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
 
                 {/* Data row */}
                 {!isEditing && (
-                  <div className="mt-2 flex justify-between text-sm">
+                  <div className="mt-2 grid grid-cols-4 gap-4 text-sm">
                     <div>
                       <p className="text-[10px] font-medium uppercase text-muted-foreground">Ubicación</p>
                       <p className="font-semibold">{location || '-'}</p>
@@ -224,7 +224,7 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
                     </div>
                     <div>
                       <p className="text-[10px] font-medium uppercase text-muted-foreground">Proveedor</p>
-                      <p className="font-semibold">{item.supplier.name || item.supplier.phone_number}</p>
+                      <p className="truncate font-semibold">{item.supplier.name || item.supplier.phone_number}</p>
                     </div>
                   </div>
                 )}
