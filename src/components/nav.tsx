@@ -3,24 +3,34 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { BarChart3, Bell, Ticket, LogOut } from 'lucide-react';
+import { BarChart3, Bell, Ticket, LogOut, Package } from 'lucide-react';
 
 type NavProps = {
   userName: string;
   isSeller: boolean;
+  userEmail?: string;
 };
 
+const INVENTORY_EMAIL = 'parcerosmundialin@gmail.com';
+
 const navItems = [
-  { href: '/inteligencia', label: 'Inteligencia', icon: BarChart3, requiresSeller: false },
-  { href: '/partidos', label: 'Mis partidos', icon: Ticket, requiresSeller: true },
-  { href: '/alertas', label: 'Alertas', icon: Bell, requiresSeller: false },
+  { href: '/inteligencia', label: 'Inteligencia', icon: BarChart3, requiresSeller: false, requiresInventory: false },
+  { href: '/partidos', label: 'Mis partidos', icon: Ticket, requiresSeller: true, requiresInventory: false },
+  { href: '/inventario', label: 'Inventario', icon: Package, requiresSeller: false, requiresInventory: true },
+  { href: '/alertas', label: 'Alertas', icon: Bell, requiresSeller: false, requiresInventory: false },
 ];
 
-export function Nav({ userName, isSeller }: NavProps) {
+export function Nav({ userName, isSeller, userEmail }: NavProps) {
   const pathname = usePathname();
 
+  const canSeeInventory = userEmail === INVENTORY_EMAIL;
+
   const visibleItems = navItems.filter(
-    (item) => !item.requiresSeller || isSeller,
+    (item) => {
+      if (item.requiresSeller && !isSeller) return false;
+      if (item.requiresInventory && !canSeeInventory) return false;
+      return true;
+    },
   );
 
   return (
