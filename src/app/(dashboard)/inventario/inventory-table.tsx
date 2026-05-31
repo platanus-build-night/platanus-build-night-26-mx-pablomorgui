@@ -165,7 +165,10 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
         return (
           <div
             key={item.id}
-            className="rounded-lg border-2 border-black bg-background shadow-[4px_4px_0_0_#000]"
+            onClick={() => !isEditing && router.push(`/inteligencia/${item.match.id}`)}
+            className={`rounded-lg border-2 border-black bg-background shadow-[4px_4px_0_0_#000] ${
+              !isEditing ? 'cursor-pointer hover:shadow-[2px_2px_0_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] transition-all' : ''
+            }`}
           >
             <div className="p-3">
               {/* Desktop layout */}
@@ -181,7 +184,7 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
                     </span>
                   </div>
                   {!isEditing && (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-1.5">
                         <Switch
                           checked={item.active}
@@ -269,7 +272,7 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
                         </p>
                       </div>
                     </div>
-                    <div className="mt-2 flex items-center justify-between">
+                    <div className="mt-2 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-1.5">
                         <Switch
                           checked={item.active}

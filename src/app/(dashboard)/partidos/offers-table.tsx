@@ -148,9 +148,10 @@ export function OffersTable({ offers }: OffersTableProps) {
         return (
           <div
             key={offer.id}
+            onClick={() => !isEditing && router.push(`/inteligencia/${offer.match.id}`)}
             className={`border-2 border-black rounded-md bg-background shadow-[4px_4px_0_0_#000] ${
               !isActive ? 'opacity-50' : ''
-            }`}
+            } ${!isEditing ? 'cursor-pointer hover:shadow-[2px_2px_0_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] transition-all' : ''}`}
           >
             {/* Main row */}
             <div className="flex items-center gap-3 p-3">
@@ -185,10 +186,12 @@ export function OffersTable({ offers }: OffersTableProps) {
 
               {/* Switch - always visible */}
               {!isEditing && (
-                <Switch
-                  checked={isActive}
-                  onCheckedChange={() => toggleActive(offer)}
-                />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Switch
+                    checked={isActive}
+                    onCheckedChange={() => toggleActive(offer)}
+                  />
+                </div>
               )}
 
               {/* Edit button - desktop only */}
@@ -196,7 +199,7 @@ export function OffersTable({ offers }: OffersTableProps) {
                 <Button
                   size="icon"
                   variant="ghost"
-                  onClick={() => startEditing(offer)}
+                  onClick={(e) => { e.stopPropagation(); startEditing(offer); }}
                   className="hidden sm:flex"
                 >
                   <Pencil className="h-4 w-4" />
@@ -206,7 +209,7 @@ export function OffersTable({ offers }: OffersTableProps) {
 
             {/* Mobile details (non-editing) */}
             {!isEditing && (
-              <div className="flex items-center justify-between border-t-2 border-black px-3 py-2 sm:hidden">
+              <div className="flex items-center justify-between border-t-2 border-black px-3 py-2 sm:hidden" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2 rounded-md bg-muted px-2 py-1 text-sm">
                   <span className="font-bold">Cat {formatCategory(offer.category)}</span>
                   <span className="h-3.5 w-px bg-black/20" />
