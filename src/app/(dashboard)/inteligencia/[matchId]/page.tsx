@@ -3,7 +3,7 @@ import { getMatchById, getAlertsByMatch } from '@/lib/db';
 import { getPriceHistory } from '@/lib/db/price-history';
 import { getSession, getUserById } from '@/lib/auth';
 import { getTeamFlag, getTeamNameEs } from '@/lib/constants';
-import { MapPin, Calendar } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { PriceTab } from './price-tab';
 import { AlertsTab } from './alerts-tab';
 import { TabSwitcher } from './tab-switcher';
@@ -61,25 +61,19 @@ export default async function MatchDetailPage({ params, searchParams }: PageProp
   return (
     <div>
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="shrink-0 rounded border-2 border-black bg-primary px-3 py-1">
-            <span className="text-lg font-bold">M{match.match_number}</span>
-          </div>
-          <h1 className="text-2xl font-bold">
-            {homeDisplay} vs. {awayDisplay}
+      <div className="mb-5 sm:mb-6">
+        <div className="flex items-baseline gap-2 sm:gap-3">
+          <span className="shrink-0 rounded border-2 border-black bg-primary px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs sm:text-base font-bold leading-none">
+            M{match.match_number}
+          </span>
+          <h1 className="text-base sm:text-2xl font-bold leading-tight">
+            {homeDisplay} vs {awayDisplay}
           </h1>
         </div>
-        <div className="flex items-center gap-4 text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <MapPin className="h-4 w-4" />
-            {match.venue}, {formatCity(match.city)}
-          </span>
-          <span className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            {formatDate(match.kickoff_at)}
-          </span>
-        </div>
+        <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+          <MapPin className="inline h-3 w-3 sm:h-4 sm:w-4 mr-0.5 -mt-0.5" />
+          {match.venue}, {formatCity(match.city)} · {formatDate(match.kickoff_at)}
+        </p>
       </div>
 
       {/* Tabs */}
