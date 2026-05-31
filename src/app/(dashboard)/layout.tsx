@@ -16,7 +16,7 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen">
       <Nav userName={session.name} isSeller={session.role === 'seller' || session.role === 'both'} />
-      <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-6 pb-24 sm:pb-6">{children}</main>
     </div>
   );
 }

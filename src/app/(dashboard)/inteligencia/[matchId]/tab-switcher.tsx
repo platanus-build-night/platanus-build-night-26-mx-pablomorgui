@@ -9,7 +9,7 @@ type TabSwitcherProps = {
 
 export function TabSwitcher({ activeTab, matchId }: TabSwitcherProps) {
   return (
-    <div className="border-b-2 border-black mb-6">
+    <div className="border-b-2 border-black mb-6 sm:mb-8">
       <div className="flex">
         <Link
           href={`/inteligencia/${matchId}?tab=precios`}

@@ -41,7 +41,6 @@ export type MatchPriceStats = {
 function normalizeCategory(category: string | null): string {
   if (!category) return 'UNKNOWN';
   const upper = category.toUpperCase().trim();
-  if (upper.includes('1') && upper.includes('FRONT')) return 'CAT 1 FRONT';
   if (upper.includes('1')) return 'CAT 1';
   if (upper.includes('2')) return 'CAT 2';
   if (upper.includes('3')) return 'CAT 3';
@@ -70,17 +69,33 @@ export async function getMarketStatsForAllMatches(): Promise<Map<string, MatchPr
   cutoffDate.setDate(cutoffDate.getDate() - 7);
   const cutoffIso = cutoffDate.toISOString();
 
-  // Fetch active offers from last 7 days
-  const { data, error } = await getSupabase()
-    .from('offers')
-    .select('id,seller_id,match_id,price_per_ticket,currency,quantity,category,confidence,review_reason,extracted_at')
-    .eq('status', 'active')
-    .not('match_id', 'is', null)
-    .gte('extracted_at', cutoffIso);
+  // Fetch active offers from last 7 days (paginate to bypass 1000 row limit)
+  const PAGE_SIZE = 1000;
+  let allOffers: RawOffer[] = [];
+  let page = 0;
 
-  if (error) throw new Error(`Failed to fetch offers: ${error.message}`);
+  while (true) {
+    const from = page * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
 
-  const offers = (data ?? []) as RawOffer[];
+    const { data, error } = await getSupabase()
+      .from('offers')
+      .select('id,seller_id,match_id,price_per_ticket,currency,quantity,category,confidence,review_reason,extracted_at')
+      .eq('status', 'active')
+      .not('match_id', 'is', null)
+      .gte('extracted_at', cutoffIso)
+      .range(from, to);
+
+    if (error) throw new Error(`Failed to fetch offers: ${error.message}`);
+
+    const pageData = (data ?? []) as RawOffer[];
+    allOffers = allOffers.concat(pageData);
+
+    if (pageData.length < PAGE_SIZE) break;
+    page++;
+  }
+
+  const offers = allOffers;
 
   // Filter outliers and low confidence
   const filtered = offers.filter(
@@ -127,10 +142,7 @@ export async function getMarketStatsForAllMatches(): Promise<Map<string, MatchPr
   const result = new Map<string, MatchPriceStats>();
 
   for (const [matchId, categoryMap] of matchOffers) {
-    const cat1Prices = [
-      ...(categoryMap.get('CAT 1') ?? []),
-      ...(categoryMap.get('CAT 1 FRONT') ?? []),
-    ];
+    const cat1Prices = categoryMap.get('CAT 1') ?? [];
     const cat2Prices = categoryMap.get('CAT 2') ?? [];
     const cat3Prices = categoryMap.get('CAT 3') ?? [];
 
@@ -150,61 +162,6 @@ export async function getMarketStatsForAllMatches(): Promise<Map<string, MatchPr
       cat3: cat3Stats ? { category: 'CAT 3', ...cat3Stats } : null,
       offerCount: allPrices.length,
     });
-  }
-
-  // Also include premium_offers
-  const { data: premiumData, error: premiumError } = await getSupabase()
-    .from('premium_offers')
-    .select('id,premium_seller_id,match_id,price_per_ticket,currency,quantity,category')
-    .eq('show_in_search', true);
-
-  if (premiumError) throw new Error(`Failed to fetch premium offers: ${premiumError.message}`);
-
-  for (const o of premiumData ?? []) {
-    const matchId = o.match_id as string;
-    const categoryNorm = normalizeCategory(o.category as string | null);
-    const priceUsd = o.currency === 'MXN' ? Number(o.price_per_ticket) / FX_RATE : Number(o.price_per_ticket);
-
-    let stats = result.get(matchId);
-    if (!stats) {
-      stats = {
-        matchId,
-        minPrice: null,
-        currency: 'USD',
-        cat1: null,
-        cat2: null,
-        cat3: null,
-        offerCount: 0,
-      };
-      result.set(matchId, stats);
-    }
-
-    stats.offerCount++;
-
-    if (stats.minPrice === null || priceUsd < stats.minPrice) {
-      stats.minPrice = Math.round(priceUsd);
-    }
-
-    // Add to category (simplified - just update median if lower)
-    if (categoryNorm === 'CAT 1' || categoryNorm === 'CAT 1 FRONT') {
-      if (!stats.cat1) {
-        stats.cat1 = { category: 'CAT 1', median: Math.round(priceUsd), p25: Math.round(priceUsd), p75: Math.round(priceUsd), count: 1 };
-      } else if (priceUsd < stats.cat1.median) {
-        stats.cat1.median = Math.round(priceUsd);
-      }
-    } else if (categoryNorm === 'CAT 2') {
-      if (!stats.cat2) {
-        stats.cat2 = { category: 'CAT 2', median: Math.round(priceUsd), p25: Math.round(priceUsd), p75: Math.round(priceUsd), count: 1 };
-      } else if (priceUsd < stats.cat2.median) {
-        stats.cat2.median = Math.round(priceUsd);
-      }
-    } else if (categoryNorm === 'CAT 3') {
-      if (!stats.cat3) {
-        stats.cat3 = { category: 'CAT 3', median: Math.round(priceUsd), p25: Math.round(priceUsd), p75: Math.round(priceUsd), count: 1 };
-      } else if (priceUsd < stats.cat3.median) {
-        stats.cat3.median = Math.round(priceUsd);
-      }
-    }
   }
 
   return result;

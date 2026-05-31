@@ -16,9 +16,10 @@ import { Search } from 'lucide-react';
 
 type FiltersProps = {
   teams: string[];
+  basePath?: string;
 };
 
-export function Filters({ teams }: FiltersProps) {
+export function Filters({ teams, basePath = '/inteligencia' }: FiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -29,9 +30,12 @@ export function Filters({ teams }: FiltersProps) {
 
   const [searchValue, setSearchValue] = useState(currentSearch);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingRef = useRef(false);
 
   useEffect(() => {
-    setSearchValue(currentSearch);
+    if (!isTypingRef.current) {
+      setSearchValue(currentSearch);
+    }
   }, [currentSearch]);
 
   function updateFilter(key: string, value: string) {
@@ -41,14 +45,18 @@ export function Filters({ teams }: FiltersProps) {
     } else {
       params.delete(key);
     }
-    router.push(`/inteligencia?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
   }
 
   function handleSearchChange(value: string) {
+    isTypingRef.current = true;
     setSearchValue(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       updateFilter('q', value);
+      setTimeout(() => {
+        isTypingRef.current = false;
+      }, 100);
     }, 300);
   }
 

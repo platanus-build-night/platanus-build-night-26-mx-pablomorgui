@@ -69,8 +69,8 @@ export function Nav({ userName, isSeller }: NavProps) {
         </div>
       </div>
 
-      {/* Mobile nav */}
-      <nav className="flex border-t-2 border-black sm:hidden">
+      {/* Mobile bottom nav - fixed at bottom like native apps */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex border-t-2 border-black bg-background pb-[env(safe-area-inset-bottom)] sm:hidden">
         {visibleItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
@@ -78,7 +78,7 @@ export function Nav({ userName, isSeller }: NavProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex flex-1 flex-col items-center gap-1 py-2 text-xs font-semibold',
+                'flex flex-1 flex-col items-center gap-0.5 pt-2 pb-1 text-[11px] font-semibold',
                 isActive
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground',

@@ -37,13 +37,10 @@ export function OffersSection({
   return (
     <>
       {/* Header bar */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold">Mis ofertas</h2>
-          <span className="rounded border-2 border-black bg-muted px-2 py-0.5 text-sm font-semibold">
-            {hasUnlimitedPlan ? `${activeCount} activas` : `${activeCount}/${maxOffers} activas`}
-          </span>
-        </div>
+      <div className="mb-4 flex items-center justify-between">
+        <span className="rounded border-2 border-black bg-muted px-2 py-0.5 text-sm font-semibold">
+          {hasUnlimitedPlan ? `${activeCount} activas` : `${activeCount}/${maxOffers} activas`}
+        </span>
 
         <Button onClick={handleNewOffer}>
           <Plus className="mr-1.5 h-4 w-4" strokeWidth={3} />

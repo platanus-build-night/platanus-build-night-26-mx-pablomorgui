@@ -40,7 +40,8 @@ function TrendBadge({ trend }: { trend: { direction: 'up' | 'down' | 'stable' | 
   return (
     <span className="flex items-center gap-0.5 text-muted-foreground font-semibold text-xs">
       <Minus className="h-3 w-3" />
-      Estable
+      <span className="hidden sm:inline">Estable</span>
+      <span className="sm:hidden">0%</span>
     </span>
   );
 }
@@ -56,22 +57,22 @@ function CategoryCard({
 }) {
   if (!stats) {
     return (
-      <div className="border-2 border-black rounded-md bg-muted px-3 py-2 text-center">
-        <p className="font-bold text-sm">{label}</p>
-        <p className="text-muted-foreground text-xs">Sin datos</p>
+      <div className="border-2 border-black rounded-md bg-muted px-2 py-2 sm:px-3 text-center">
+        <p className="font-bold text-xs sm:text-sm">{label}</p>
+        <p className="text-muted-foreground text-[10px] sm:text-xs">Sin datos</p>
       </div>
     );
   }
 
   return (
-    <div className="border-2 border-black rounded-md bg-background shadow-[3px_3px_0_0_#000] px-3 py-2">
-      <div className="flex items-center justify-between mb-1">
-        <p className="font-bold text-sm">{label}</p>
+    <div className="border-2 border-black rounded-md bg-background shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000] px-2 py-1.5 sm:px-3 sm:py-2">
+      <div className="flex items-center justify-between gap-1 mb-0.5">
+        <p className="font-bold text-xs sm:text-sm">{label}</p>
         <TrendBadge trend={trend ?? { direction: null, changePercent: null }} />
       </div>
-      <p className="text-lg font-bold">${stats.median} USD</p>
-      <p className="text-xs text-muted-foreground">
-        ${stats.p25} - ${stats.p75} ({stats.count})
+      <p className="text-base sm:text-lg font-bold">${stats.median}</p>
+      <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+        ${stats.p25}-${stats.p75} · {stats.count}
       </p>
     </div>
   );
@@ -95,18 +96,18 @@ export function PriceTab({ priceData, currentDays, matchId }: PriceTabProps) {
   const hasData = modeData.dailyPrices.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8">
       {/* Filters row */}
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-end gap-3 sm:gap-4">
         {/* Days selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-muted-foreground">Periodo:</span>
-          <div className="flex border-2 border-black rounded-md overflow-hidden shadow-[3px_3px_0_0_#000]">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <span className="text-[10px] sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide sm:normal-case sm:tracking-normal">Periodo</span>
+          <div className="flex border-2 border-black rounded-md overflow-hidden shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]">
             {[3, 5, 7].map((d, i) => (
               <button
                 key={d}
                 onClick={() => setDays(d)}
-                className={`px-3 py-1 text-sm font-semibold transition-all ${
+                className={`px-2.5 py-1.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-semibold transition-all ${
                   currentDays === d ? 'bg-primary' : 'bg-background hover:bg-muted'
                 } ${i > 0 ? 'border-l-2 border-black' : ''}`}
               >
@@ -117,14 +118,14 @@ export function PriceTab({ priceData, currentDays, matchId }: PriceTabProps) {
         </div>
 
         {/* Quantity mode selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-muted-foreground">Cantidad:</span>
-          <div className="flex border-2 border-black rounded-md overflow-hidden shadow-[3px_3px_0_0_#000]">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <span className="text-[10px] sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide sm:normal-case sm:tracking-normal">Cantidad</span>
+          <div className="flex border-2 border-black rounded-md overflow-hidden shadow-[2px_2px_0_0_#000] sm:shadow-[3px_3px_0_0_#000]">
             {QUANTITY_MODES.map((mode, i) => (
               <button
                 key={mode.value}
                 onClick={() => setQuantityMode(mode.value)}
-                className={`px-3 py-1 text-sm font-semibold transition-all ${
+                className={`px-2 py-1.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-semibold transition-all ${
                   quantityMode === mode.value ? 'bg-primary' : 'bg-background hover:bg-muted'
                 } ${i > 0 ? 'border-l-2 border-black' : ''}`}
               >
@@ -136,7 +137,7 @@ export function PriceTab({ priceData, currentDays, matchId }: PriceTabProps) {
       </div>
 
       {/* Category cards */}
-      <div className="grid gap-3 grid-cols-3">
+      <div className="grid gap-2 sm:gap-3 grid-cols-3">
         <CategoryCard
           label="Cat 1"
           stats={modeData.cat1}
@@ -156,14 +157,14 @@ export function PriceTab({ priceData, currentDays, matchId }: PriceTabProps) {
 
       {/* Chart */}
       {hasData ? (
-        <div className="border-2 border-black rounded-md bg-background shadow-[4px_4px_0_0_#000] p-4">
-          <h3 className="font-bold mb-4">Tendencia de precios</h3>
+        <div className="border-2 border-black rounded-md bg-background shadow-[2px_2px_0_0_#000] sm:shadow-[4px_4px_0_0_#000] p-3 sm:p-4">
+          <h3 className="font-bold text-sm sm:text-base mb-3 sm:mb-4">Tendencia de precios</h3>
           <PriceChart data={modeData.dailyPrices} />
         </div>
       ) : (
-        <div className="border-2 border-dashed border-black rounded-md bg-muted p-8 text-center">
-          <p className="font-semibold text-muted-foreground">
-            No hay suficientes datos para mostrar la grafica
+        <div className="border-2 border-dashed border-black rounded-md bg-muted p-6 sm:p-8 text-center">
+          <p className="font-semibold text-sm text-muted-foreground">
+            No hay suficientes datos para mostrar la gráfica
           </p>
         </div>
       )}

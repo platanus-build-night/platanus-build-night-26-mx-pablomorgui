@@ -33,9 +33,8 @@ export function MatchCard({ match, stats }: MatchCardProps) {
     ? `${getTeamNameEs(homeTeam)} ${getTeamFlag(homeTeam)}`
     : match.home_placeholder ?? '?';
 
-  const awayDisplay = awayTeam
-    ? `${getTeamFlag(awayTeam)} ${getTeamNameEs(awayTeam)}`
-    : match.away_placeholder ?? '?';
+  const awayFlag = awayTeam ? getTeamFlag(awayTeam) : null;
+  const awayName = awayTeam ? getTeamNameEs(awayTeam) : (match.away_placeholder ?? '?');
 
   return (
     <Link href={`/inteligencia/${match.id}`}>
@@ -46,7 +45,7 @@ export function MatchCard({ match, stats }: MatchCardProps) {
             <span className="text-sm font-bold">M{match.match_number}</span>
           </div>
           <span className="text-base font-bold truncate">
-            {homeDisplay} vs. {awayDisplay}
+            {homeDisplay} &nbsp;vs.&nbsp; {awayFlag}<span className="ml-1">{awayName}</span>
           </span>
         </div>
 

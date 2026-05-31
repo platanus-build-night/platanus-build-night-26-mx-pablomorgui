@@ -69,7 +69,6 @@ export type PriceHistoryData = {
 function normalizeCategory(category: string | null): string {
   if (!category) return 'UNKNOWN';
   const upper = category.toUpperCase().trim();
-  if (upper.includes('1') && upper.includes('FRONT')) return 'CAT 1';
   if (upper.includes('1')) return 'CAT 1';
   if (upper.includes('2')) return 'CAT 2';
   if (upper.includes('3')) return 'CAT 3';
@@ -163,7 +162,7 @@ export async function getPriceHistory(matchId: string, days: number): Promise<Pr
     .eq('match_id', matchId)
     .eq('status', 'active')
     .gte('extracted_at', cutoffIso)
-    .order('extracted_at', { ascending: true });
+    .order('extracted_at', { ascending: false });
 
   if (error) throw new Error(`Failed to fetch offers: ${error.message}`);
 
@@ -186,20 +185,31 @@ export async function getPriceHistory(matchId: string, days: number): Promise<Pr
   const orphanPrices = new Map<string, number[]>([['CAT 1', []], ['CAT 2', []], ['CAT 3', []]]);
   const allPrices = new Map<string, number[]>([['CAT 1', []], ['CAT 2', []], ['CAT 3', []]]);
 
-  // Dedup by (date, seller_id, category)
-  const seenKeys = new Set<string>();
+  // Normalize all offers first (same as offers.ts)
+  const normalized = filtered.map((o) => ({
+    ...o,
+    categoryNorm: normalizeCategory(o.category),
+    priceUsd: o.currency === 'MXN' ? o.price_per_ticket / FX_RATE : o.price_per_ticket,
+  }));
 
-  for (const o of filtered) {
-    const categoryNorm = normalizeCategory(o.category);
-    if (!['CAT 1', 'CAT 2', 'CAT 3'].includes(categoryNorm)) continue;
+  // Sort by extracted_at desc (same as offers.ts)
+  normalized.sort((a, b) => new Date(b.extracted_at).getTime() - new Date(a.extracted_at).getTime());
 
-    const priceUsd = o.currency === 'MXN' ? o.price_per_ticket / FX_RATE : o.price_per_ticket;
+  // Dedup by (seller_id, categoryNorm) - keep most recent (sorted desc, first wins)
+  const dedupMap = new Map<string, typeof normalized[0]>();
+  for (const o of normalized) {
+    const dedupKey = `${o.seller_id}|${o.categoryNorm}`;
+    if (!dedupMap.has(dedupKey)) {
+      dedupMap.set(dedupKey, o);
+    }
+  }
+
+  // Process deduped offers, filtering to CAT 1/2/3 only
+  for (const o of dedupMap.values()) {
+    if (!['CAT 1', 'CAT 2', 'CAT 3'].includes(o.categoryNorm)) continue;
+
+    const { priceUsd, categoryNorm } = o;
     const dateStr = getDateString(new Date(o.extracted_at));
-    const dedupKey = `${dateStr}|${o.seller_id}|${categoryNorm}`;
-
-    if (seenKeys.has(dedupKey)) continue;
-    seenKeys.add(dedupKey);
-
     const isOrphan = o.quantity === 1;
 
     // Helper to add to daily data
