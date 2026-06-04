@@ -6,6 +6,7 @@ export type PriceAlert = {
   match_id: string;
   category: string | null;
   max_price: number;
+  min_quantity: number | null;
   active: boolean;
   created_at: string;
   last_triggered_at: string | null;
@@ -33,6 +34,7 @@ export async function getAlertsByUser(userId: string): Promise<PriceAlertWithMat
       match_id,
       category,
       max_price,
+      min_quantity,
       active,
       created_at,
       last_triggered_at,
@@ -58,6 +60,7 @@ export async function getAlertsByUser(userId: string): Promise<PriceAlertWithMat
     match_id: row.match_id,
     category: row.category,
     max_price: row.max_price,
+    min_quantity: row.min_quantity,
     active: row.active,
     created_at: row.created_at,
     last_triggered_at: row.last_triggered_at,
@@ -82,6 +85,7 @@ export type CreateAlertParams = {
   matchId: string;
   category: string | null;
   maxPrice: number;
+  minQuantity?: number | null;
 };
 
 export async function createAlert(params: CreateAlertParams): Promise<string> {
@@ -92,6 +96,7 @@ export async function createAlert(params: CreateAlertParams): Promise<string> {
       match_id: params.matchId,
       category: params.category,
       max_price: params.maxPrice,
+      min_quantity: params.minQuantity ?? null,
       active: true,
     })
     .select('id')
@@ -111,6 +116,29 @@ export async function updateAlertActive(alertId: string, userId: string, active:
   const { error } = await getSupabase()
     .from('price_alerts')
     .update({ active })
+    .eq('id', alertId)
+    .eq('user_id', userId);
+
+  if (error) throw new Error(`Failed to update alert: ${error.message}`);
+}
+
+export type UpdateAlertParams = {
+  category?: string | null;
+  maxPrice?: number;
+  minQuantity?: number | null;
+};
+
+export async function updateAlert(alertId: string, userId: string, params: UpdateAlertParams): Promise<void> {
+  const updates: Record<string, unknown> = {};
+  if (params.category !== undefined) updates.category = params.category;
+  if (params.maxPrice !== undefined) updates.max_price = params.maxPrice;
+  if (params.minQuantity !== undefined) updates.min_quantity = params.minQuantity;
+
+  if (Object.keys(updates).length === 0) return;
+
+  const { error } = await getSupabase()
+    .from('price_alerts')
+    .update(updates)
     .eq('id', alertId)
     .eq('user_id', userId);
 

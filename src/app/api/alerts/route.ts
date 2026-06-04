@@ -10,7 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { matchId, category, maxPrice, whatsappNumber } = await request.json();
+    const { matchId, category, maxPrice, minQuantity, whatsappNumber } = await request.json();
 
     if (!matchId || !maxPrice) {
       return NextResponse.json(
@@ -26,6 +26,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (minQuantity !== undefined && minQuantity !== null && minQuantity < 1) {
+      return NextResponse.json(
+        { error: 'La cantidad debe ser mayor a 0' },
+        { status: 400 },
+      );
+    }
+
     if (whatsappNumber) {
       await updateUserWhatsApp(session.userId, whatsappNumber);
     }
@@ -35,6 +42,7 @@ export async function POST(request: Request) {
       matchId,
       category: category || null,
       maxPrice,
+      minQuantity: minQuantity || null,
     });
 
     return NextResponse.json({ id: alertId });

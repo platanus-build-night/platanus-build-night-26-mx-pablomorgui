@@ -1,12 +1,28 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { PriceAlertWithMatch } from '@/lib/db/alerts';
 import { getTeamFlag, getTeamNameEs } from '@/lib/constants';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Bell, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Bell, Trash2, Pencil, X, Check } from 'lucide-react';
+
+const CATEGORIES = [
+  { value: 'any', label: 'Cualquier categoria' },
+  { value: 'CAT 1', label: 'Cat 1' },
+  { value: 'CAT 2', label: 'Cat 2' },
+  { value: 'CAT 3', label: 'Cat 3' },
+];
 
 type AlertsListProps = {
   alerts: PriceAlertWithMatch[];
@@ -23,8 +39,27 @@ function formatMatchTeams(match: PriceAlertWithMatch['match']): string {
   return `${match.home_placeholder ?? '?'} vs ${match.away_placeholder ?? '?'}`;
 }
 
+function formatAlertRule(alert: PriceAlertWithMatch): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  if (alert.category) {
+    parts.push(<strong key="cat">{alert.category}</strong>);
+  } else {
+    parts.push('Cualquier categoría');
+  }
+  if (alert.min_quantity) {
+    parts.push(', mínimo ', <strong key="qty">{alert.min_quantity} boletos</strong>);
+  }
+  parts.push(', menos de ', <strong key="price">${alert.max_price} USD</strong>);
+  return <>{parts}</>;
+}
+
 export function AlertsList({ alerts }: AlertsListProps) {
   const router = useRouter();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editCategory, setEditCategory] = useState('any');
+  const [editMaxPrice, setEditMaxPrice] = useState('');
+  const [editMinQuantity, setEditMinQuantity] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
 
   async function toggleActive(alertId: string, active: boolean) {
     try {
@@ -45,6 +80,42 @@ export function AlertsList({ alerts }: AlertsListProps) {
       router.refresh();
     } catch {
       // Ignore
+    }
+  }
+
+  function startEdit(alert: PriceAlertWithMatch) {
+    setEditingId(alert.id);
+    setEditCategory(alert.category ?? 'any');
+    setEditMaxPrice(String(alert.max_price));
+    setEditMinQuantity(alert.min_quantity ? String(alert.min_quantity) : '');
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+  }
+
+  async function saveEdit(alertId: string) {
+    const price = parseInt(editMaxPrice);
+    if (!price || price < 1) return;
+
+    setEditSaving(true);
+    try {
+      const qty = editMinQuantity ? parseInt(editMinQuantity) : null;
+      await fetch(`/api/alerts/${alertId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: editCategory === 'any' ? null : editCategory,
+          maxPrice: price,
+          minQuantity: qty,
+        }),
+      });
+      setEditingId(null);
+      router.refresh();
+    } catch {
+      // Ignore
+    } finally {
+      setEditSaving(false);
     }
   }
 
@@ -71,44 +142,99 @@ export function AlertsList({ alerts }: AlertsListProps) {
             !alert.active ? 'opacity-50' : ''
           }`}
         >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <Link
-                href={`/inteligencia/${alert.match_id}`}
-                className="hover:underline"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="shrink-0 rounded border-2 border-black bg-primary px-2 py-0.5 text-xs font-bold">
-                    M{alert.match.match_number}
-                  </span>
-                  <span className="font-semibold truncate">
-                    {formatMatchTeams(alert.match)}
-                  </span>
-                </div>
-              </Link>
-              <div className="text-sm text-muted-foreground">
-                {alert.category ? (
-                  <><strong className="text-foreground">{alert.category}</strong> en menos de <strong className="text-foreground">${alert.max_price} USD</strong></>
-                ) : (
-                  <>Cualquier categoría en menos de <strong className="text-foreground">${alert.max_price} USD</strong></>
-                )}
+          <div className="flex items-center gap-2 mb-2">
+            <Link
+              href={`/inteligencia/${alert.match_id}`}
+              className="hover:underline"
+            >
+              <div className="flex items-center gap-2">
+                <span className="shrink-0 rounded border-2 border-black bg-primary px-2 py-0.5 text-xs font-bold">
+                  M{alert.match.match_number}
+                </span>
+                <span className="font-semibold truncate">
+                  {formatMatchTeams(alert.match)}
+                </span>
+              </div>
+            </Link>
+          </div>
+
+          {editingId === alert.id ? (
+            <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Select value={editCategory} onValueChange={setEditCategory}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  type="number"
+                  min={1}
+                  value={editMaxPrice}
+                  onChange={(e) => setEditMaxPrice(e.target.value)}
+                  placeholder="Precio USD"
+                />
+                <Input
+                  type="number"
+                  min={1}
+                  value={editMinQuantity}
+                  onChange={(e) => setEditMinQuantity(e.target.value)}
+                  placeholder="Min boletos"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => saveEdit(alert.id)}
+                  disabled={editSaving}
+                >
+                  <Check className="mr-1 h-3 w-3" />
+                  Guardar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={cancelEdit}
+                  disabled={editSaving}
+                >
+                  <X className="mr-1 h-3 w-3" />
+                  Cancelar
+                </Button>
               </div>
             </div>
-
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={alert.active}
-                onCheckedChange={(checked) => toggleActive(alert.id, checked)}
-              />
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => deleteAlert(alert.id)}
-              >
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
+          ) : (
+            <div className="flex items-center justify-between gap-4">
+              <div className="text-sm text-muted-foreground">
+                {formatAlertRule(alert)}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => startEdit(alert)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Switch
+                  checked={alert.active}
+                  onCheckedChange={(checked) => toggleActive(alert.id, checked)}
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => deleteAlert(alert.id)}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       ))}
     </div>

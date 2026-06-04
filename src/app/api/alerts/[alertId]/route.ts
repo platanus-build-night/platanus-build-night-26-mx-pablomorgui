@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
-import { updateAlertActive, deleteAlert } from '@/lib/db';
+import { updateAlertActive, updateAlert, deleteAlert } from '@/lib/db';
 
 type RouteContext = {
   params: Promise<{ alertId: string }>;
@@ -15,16 +15,36 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const { alertId } = await context.params;
-    const { active } = await request.json();
+    const body = await request.json();
 
-    if (typeof active !== 'boolean') {
+    // Toggle active only
+    if (typeof body.active === 'boolean' && Object.keys(body).length === 1) {
+      await updateAlertActive(alertId, session.userId, body.active);
+      return NextResponse.json({ success: true });
+    }
+
+    // Full edit
+    const { category, maxPrice, minQuantity } = body;
+
+    if (maxPrice !== undefined && (typeof maxPrice !== 'number' || maxPrice < 1)) {
       return NextResponse.json(
-        { error: 'Campo active requerido' },
+        { error: 'El precio debe ser mayor a 0' },
         { status: 400 },
       );
     }
 
-    await updateAlertActive(alertId, session.userId, active);
+    if (minQuantity !== undefined && minQuantity !== null && (typeof minQuantity !== 'number' || minQuantity < 1)) {
+      return NextResponse.json(
+        { error: 'La cantidad debe ser mayor a 0' },
+        { status: 400 },
+      );
+    }
+
+    await updateAlert(alertId, session.userId, {
+      category: category !== undefined ? (category || null) : undefined,
+      maxPrice,
+      minQuantity: minQuantity !== undefined ? (minQuantity || null) : undefined,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
