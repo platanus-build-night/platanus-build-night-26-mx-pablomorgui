@@ -54,7 +54,7 @@ export function Combobox({
   }, [options, search]);
 
   return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
+    <Popover.Root open={open} onOpenChange={setOpen} modal>
       <Popover.Trigger asChild>
         <button
           type="button"
@@ -73,7 +73,7 @@ export function Combobox({
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="z-50 w-[var(--radix-popover-trigger-width)] border-2 border-black rounded-md bg-background shadow-[4px_4px_0_0_#000]"
+          className="z-[100] w-[var(--radix-popover-trigger-width)] border-2 border-black rounded-md bg-background shadow-[4px_4px_0_0_#000]"
           align="start"
           sideOffset={4}
           onOpenAutoFocus={(e) => e.preventDefault()}
@@ -86,7 +86,7 @@ export function Combobox({
               autoFocus={false}
               className="h-10 w-full border-b-2 border-black bg-transparent px-3 text-sm font-medium outline-none placeholder:text-muted-foreground"
             />
-            <CommandList className="max-h-60 overflow-auto">
+            <CommandList className="max-h-60 overflow-y-auto overscroll-contain touch-pan-y">
               <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
                 {emptyText}
               </CommandEmpty>
