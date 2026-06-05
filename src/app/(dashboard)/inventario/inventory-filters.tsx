@@ -21,14 +21,22 @@ type InventoryFiltersProps = {
   matches: Match[];
 };
 
-export function InventoryFilters({ suppliers, matches }: InventoryFiltersProps) {
+export function InventoryFilters({ suppliers: initialSuppliers, matches }: InventoryFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
+  const [suppliers, setSuppliers] = useState(initialSuppliers);
 
   const currentSupplier = searchParams.get('supplier') ?? '';
   const currentQ = searchParams.get('q') ?? '';
+
+  function handleSupplierCreated(supplier: Supplier) {
+    setSuppliers((prev) => [...prev, supplier].sort((a, b) =>
+      (a.name ?? '').localeCompare(b.name ?? '')
+    ));
+    router.refresh();
+  }
 
   const updateParams = useCallback(
     (key: string, value: string) => {
@@ -88,6 +96,7 @@ export function InventoryFilters({ suppliers, matches }: InventoryFiltersProps) 
         onOpenChange={setModalOpen}
         suppliers={suppliers}
         matches={matches}
+        onSupplierCreated={handleSupplierCreated}
       />
     </>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { SupplierInventoryWithDetails, Supplier, Match } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -15,10 +16,19 @@ type InventorySectionProps = {
 
 export function InventorySection({
   inventory,
-  suppliers,
+  suppliers: initialSuppliers,
   matches,
 }: InventorySectionProps) {
+  const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
+  const [suppliers, setSuppliers] = useState(initialSuppliers);
+
+  function handleSupplierCreated(supplier: Supplier) {
+    setSuppliers((prev) => [...prev, supplier].sort((a, b) =>
+      (a.name ?? '').localeCompare(b.name ?? '')
+    ));
+    router.refresh();
+  }
 
   return (
     <>
@@ -36,6 +46,7 @@ export function InventorySection({
         onOpenChange={setModalOpen}
         suppliers={suppliers}
         matches={matches}
+        onSupplierCreated={handleSupplierCreated}
       />
     </>
   );

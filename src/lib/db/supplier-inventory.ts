@@ -234,3 +234,25 @@ export async function deleteInventoryItem(itemId: string): Promise<void> {
 
   if (error) throw new Error(`Failed to delete inventory item: ${error.message}`);
 }
+
+export type CreateSupplierParams = {
+  phoneNumber: string;
+  name: string | null;
+  defaultCurrency: string | null;
+};
+
+export async function createSupplier(params: CreateSupplierParams): Promise<Supplier> {
+  const { data, error } = await getSupabase()
+    .from('suppliers')
+    .insert({
+      phone_number: params.phoneNumber,
+      name: params.name,
+      default_currency: params.defaultCurrency,
+      active: true,
+    })
+    .select('*')
+    .single();
+
+  if (error) throw new Error(`Failed to create supplier: ${error.message}`);
+  return data;
+}

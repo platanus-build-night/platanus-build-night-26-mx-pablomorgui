@@ -16,12 +16,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
+import { NewSupplierModal } from './new-supplier-modal';
 
 type NewInventoryModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   suppliers: Supplier[];
   matches: Match[];
+  onSupplierCreated: (supplier: Supplier) => void;
 };
 
 function formatCategory(category: string): string {
@@ -33,6 +35,7 @@ export function NewInventoryModal({
   onOpenChange,
   suppliers,
   matches,
+  onSupplierCreated,
 }: NewInventoryModalProps) {
   const router = useRouter();
   const [supplierId, setSupplierId] = useState('');
@@ -47,6 +50,7 @@ export function NewInventoryModal({
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showNewSupplier, setShowNewSupplier] = useState(false);
 
   const matchOptions: ComboboxOption[] = matches.map((m) => ({
     value: m.id,
@@ -154,19 +158,38 @@ export function NewInventoryModal({
         {/* Supplier selector */}
         <div className="space-y-1.5">
           <Label>Proveedor</Label>
-          <Select value={supplierId} onValueChange={setSupplierId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar proveedor" />
-            </SelectTrigger>
-            <SelectContent>
-              {suppliers.map((supplier) => (
-                <SelectItem key={supplier.id} value={supplier.id}>
-                  {supplier.name || supplier.phone_number}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Select value={supplierId} onValueChange={setSupplierId}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Seleccionar proveedor" />
+              </SelectTrigger>
+              <SelectContent>
+                {suppliers.map((supplier) => (
+                  <SelectItem key={supplier.id} value={supplier.id}>
+                    {supplier.name || supplier.phone_number}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              className="px-3"
+              onClick={() => setShowNewSupplier(true)}
+            >
+              +
+            </Button>
+          </div>
         </div>
+
+        <NewSupplierModal
+          open={showNewSupplier}
+          onOpenChange={setShowNewSupplier}
+          onSupplierCreated={(supplier) => {
+            onSupplierCreated(supplier);
+            setSupplierId(supplier.id);
+          }}
+        />
 
         {/* Match selector */}
         <div className="space-y-1.5">
