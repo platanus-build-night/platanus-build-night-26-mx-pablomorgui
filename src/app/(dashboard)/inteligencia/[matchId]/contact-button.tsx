@@ -1,37 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MessageCircle, X } from 'lucide-react';
 import { CATEGORIES } from '@/lib/constants';
 
-type ContactDialogProps = {
+type ContactButtonProps = {
   matchDisplay: string;
   matchNumber: number;
-  preselectedCategory?: string | null;
-  onClose?: () => void;
 };
 
 const CATEGORY_OPTIONS = ['Cualquiera', ...CATEGORIES] as const;
 
-export function ContactDialog({ matchDisplay, matchNumber, preselectedCategory, onClose }: ContactDialogProps) {
+export function ContactButton({ matchDisplay, matchNumber }: ContactButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [quantity, setQuantity] = useState('2');
   const [category, setCategory] = useState<string>('Cualquiera');
-
-  useEffect(() => {
-    if (preselectedCategory) {
-      setCategory(preselectedCategory);
-      setIsOpen(true);
-    }
-  }, [preselectedCategory]);
-
-  function handleClose() {
-    setIsOpen(false);
-    setCategory('Cualquiera');
-    onClose?.();
-  }
 
   function handleSubmit() {
     const qty = parseInt(quantity, 10);
@@ -42,32 +27,27 @@ export function ContactDialog({ matchDisplay, matchNumber, preselectedCategory, 
 
     const encoded = encodeURIComponent(message);
     window.open(`https://wa.me/5218139082468?text=${encoded}`, '_blank');
-    handleClose();
+    setIsOpen(false);
   }
 
   return (
     <>
-      {/* Mobile sticky */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 bg-background border-t-2 border-black z-50">
-        <Button onClick={() => setIsOpen(true)} size="lg" className="w-full">
-          <MessageCircle className="w-4 h-4 mr-2" />
-          Me interesa este partido
-        </Button>
-      </div>
+      <Button onClick={() => setIsOpen(true)} className="hidden sm:inline-flex">
+        <MessageCircle className="w-4 h-4 mr-2" />
+        Consígueme boletos
+      </Button>
 
       {/* Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50"
-            onClick={handleClose}
+            onClick={() => setIsOpen(false)}
           />
 
-          {/* Dialog */}
           <div className="relative w-full max-w-sm bg-background border-2 border-black rounded-md shadow-[6px_6px_0_0_#000] p-5">
             <button
-              onClick={handleClose}
+              onClick={() => setIsOpen(false)}
               className="absolute top-3 right-3 p-1 hover:bg-muted rounded"
             >
               <X className="w-5 h-5" />
@@ -79,7 +59,6 @@ export function ContactDialog({ matchDisplay, matchNumber, preselectedCategory, 
             </p>
 
             <div className="space-y-4">
-              {/* Quantity */}
               <div>
                 <label className="block text-sm font-semibold mb-1.5">
                   Cantidad de boletos
@@ -93,7 +72,6 @@ export function ContactDialog({ matchDisplay, matchNumber, preselectedCategory, 
                 />
               </div>
 
-              {/* Category */}
               <div>
                 <label className="block text-sm font-semibold mb-1.5">
                   Categoría
@@ -113,7 +91,6 @@ export function ContactDialog({ matchDisplay, matchNumber, preselectedCategory, 
                 </div>
               </div>
 
-              {/* Submit */}
               <Button onClick={handleSubmit} size="lg" className="w-full mt-2">
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Enviar por WhatsApp

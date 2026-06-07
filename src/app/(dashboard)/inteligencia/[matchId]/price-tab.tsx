@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { PriceHistoryData, CategoryStat, CategoryTrend } from '@/lib/db/price-history';
 import { PriceChart } from './price-chart';
 import { ContactDialog } from './contact-dialog';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, MessageCircle } from 'lucide-react';
 
 type PriceTabProps = {
   priceData: PriceHistoryData;
@@ -51,12 +51,16 @@ function TrendBadge({ trend }: { trend: { direction: 'up' | 'down' | 'stable' | 
 
 function CategoryCard({
   label,
+  categoryKey,
   stats,
   trend,
+  onContact,
 }: {
   label: string;
+  categoryKey: string;
   stats: CategoryStat | null;
   trend: CategoryTrend | undefined;
+  onContact: (category: string) => void;
 }) {
   if (!stats) {
     return (
@@ -74,9 +78,18 @@ function CategoryCard({
         <TrendBadge trend={trend ?? { direction: null, changePercent: null }} />
       </div>
       <p className="text-base sm:text-lg font-bold">${stats.median}</p>
-      <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
-        ${stats.p25}-${stats.p75} · {stats.count}
-      </p>
+      <div className="flex items-center justify-between mt-0.5">
+        <p className="text-[10px] sm:text-xs text-muted-foreground">
+          ${stats.p25}-${stats.p75} · {stats.count}
+        </p>
+<button
+          onClick={() => onContact(categoryKey)}
+          className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold bg-primary border border-black rounded hover:bg-primary/80 transition-colors cursor-pointer"
+        >
+          <MessageCircle className="w-2.5 h-2.5" />
+          Buscar
+        </button>
+      </div>
     </div>
   );
 }
@@ -90,9 +103,18 @@ const QUANTITY_MODES: { value: QuantityMode; label: string }[] = [
 export function PriceTab({ priceData, currentDays, matchId, matchDisplay, matchNumber }: PriceTabProps) {
   const router = useRouter();
   const [quantityMode, setQuantityMode] = useState<QuantityMode>('all');
+  const [contactCategory, setContactCategory] = useState<string | null>(null);
 
   function setDays(days: number) {
     router.push(`/inteligencia/${matchId}?days=${days}`);
+  }
+
+  function handleContact(category: string) {
+    setContactCategory(category);
+  }
+
+  function handleCloseContact() {
+    setContactCategory(null);
   }
 
   const modeData = priceData[quantityMode];
@@ -143,26 +165,34 @@ export function PriceTab({ priceData, currentDays, matchId, matchDisplay, matchN
       <div className="grid gap-2 sm:gap-3 grid-cols-3">
         <CategoryCard
           label="Cat 1"
+          categoryKey="CAT 1"
           stats={modeData.cat1}
           trend={modeData.trends.find((t) => t.category === 'CAT 1')}
+          onContact={handleContact}
         />
         <CategoryCard
           label="Cat 2"
+          categoryKey="CAT 2"
           stats={modeData.cat2}
           trend={modeData.trends.find((t) => t.category === 'CAT 2')}
+          onContact={handleContact}
         />
         <CategoryCard
           label="Cat 3"
+          categoryKey="CAT 3"
           stats={modeData.cat3}
           trend={modeData.trends.find((t) => t.category === 'CAT 3')}
+          onContact={handleContact}
         />
       </div>
 
       {/* Contact CTA */}
-      <ContactDialog matchDisplay={matchDisplay} matchNumber={matchNumber} />
-
-      {/* Spacer for mobile sticky button */}
-      <div className="sm:hidden h-16" />
+      <ContactDialog
+        matchDisplay={matchDisplay}
+        matchNumber={matchNumber}
+        preselectedCategory={contactCategory}
+        onClose={handleCloseContact}
+      />
 
       {/* Chart */}
       {hasData ? (
@@ -177,6 +207,9 @@ export function PriceTab({ priceData, currentDays, matchId, matchDisplay, matchN
           </p>
         </div>
       )}
+
+      {/* Spacer for mobile sticky button */}
+      <div className="sm:hidden h-16" />
     </div>
   );
 }

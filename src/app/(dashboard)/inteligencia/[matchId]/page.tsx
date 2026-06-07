@@ -7,6 +7,7 @@ import { MapPin } from 'lucide-react';
 import { PriceTab } from './price-tab';
 import { AlertsTab } from './alerts-tab';
 import { TabSwitcher } from './tab-switcher';
+import { ContactButton } from './contact-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,22 +61,29 @@ export default async function MatchDetailPage({ params, searchParams }: PageProp
     ? `${getTeamFlag(awayTeam)} ${getTeamNameEs(awayTeam)}`
     : match.away_placeholder ?? '?';
 
+  const matchDisplaySimple = `${homeTeam ? getTeamNameEs(homeTeam) : match.home_placeholder ?? '?'} vs ${awayTeam ? getTeamNameEs(awayTeam) : match.away_placeholder ?? '?'}`;
+
   return (
     <div>
       {/* Header */}
       <div className="mb-5 sm:mb-6">
-        <div className="flex items-baseline gap-2 sm:gap-3">
-          <span className="shrink-0 rounded border-2 border-black bg-primary px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs sm:text-base font-bold leading-none">
-            M{match.match_number}
-          </span>
-          <h1 className="text-base sm:text-2xl font-bold leading-tight">
-            {homeDisplay} vs {awayDisplay}
-          </h1>
+        <div className="sm:flex sm:items-start sm:justify-between sm:gap-3">
+          <div>
+            <div className="flex items-baseline gap-2 sm:gap-3">
+              <span className="shrink-0 rounded border-2 border-black bg-primary px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs sm:text-base font-bold leading-none">
+                M{match.match_number}
+              </span>
+              <h1 className="text-base sm:text-2xl font-bold leading-tight">
+                {homeDisplay} vs {awayDisplay}
+              </h1>
+            </div>
+            <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+              <MapPin className="inline h-3 w-3 sm:h-4 sm:w-4 mr-0.5 -mt-0.5" />
+              {match.venue}, {formatCity(match.city)} · {formatDate(match.kickoff_at)}
+            </p>
+          </div>
+          <ContactButton matchDisplay={matchDisplaySimple} matchNumber={match.match_number} />
         </div>
-        <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
-          <MapPin className="inline h-3 w-3 sm:h-4 sm:w-4 mr-0.5 -mt-0.5" />
-          {match.venue}, {formatCity(match.city)} · {formatDate(match.kickoff_at)}
-        </p>
       </div>
 
       {/* Tabs */}
