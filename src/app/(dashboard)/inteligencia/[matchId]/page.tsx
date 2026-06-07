@@ -83,7 +83,13 @@ export default async function MatchDetailPage({ params, searchParams }: PageProp
 
       {/* Tab content */}
       {activeTab === 'precios' ? (
-        <PriceTab priceData={priceData} currentDays={days} matchId={matchId} />
+        <PriceTab
+          priceData={priceData}
+          currentDays={days}
+          matchId={matchId}
+          matchDisplay={`${homeTeam ? getTeamNameEs(homeTeam) : match.home_placeholder ?? '?'} vs ${awayTeam ? getTeamNameEs(awayTeam) : match.away_placeholder ?? '?'}`}
+          matchNumber={match.match_number}
+        />
       ) : (
         <AlertsTab matchId={matchId} alerts={alerts} userWhatsApp={user?.whatsapp_number ?? null} />
       )}

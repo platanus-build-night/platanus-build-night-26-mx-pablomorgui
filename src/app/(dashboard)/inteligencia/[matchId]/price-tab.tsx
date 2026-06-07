@@ -4,12 +4,15 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { PriceHistoryData, CategoryStat, CategoryTrend } from '@/lib/db/price-history';
 import { PriceChart } from './price-chart';
+import { ContactDialog } from './contact-dialog';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 type PriceTabProps = {
   priceData: PriceHistoryData;
   currentDays: number;
   matchId: string;
+  matchDisplay: string;
+  matchNumber: number;
 };
 
 type QuantityMode = 'pairs' | 'orphans' | 'all';
@@ -84,7 +87,7 @@ const QUANTITY_MODES: { value: QuantityMode; label: string }[] = [
   { value: 'all', label: 'Todo' },
 ];
 
-export function PriceTab({ priceData, currentDays, matchId }: PriceTabProps) {
+export function PriceTab({ priceData, currentDays, matchId, matchDisplay, matchNumber }: PriceTabProps) {
   const router = useRouter();
   const [quantityMode, setQuantityMode] = useState<QuantityMode>('all');
 
@@ -154,6 +157,12 @@ export function PriceTab({ priceData, currentDays, matchId }: PriceTabProps) {
           trend={modeData.trends.find((t) => t.category === 'CAT 3')}
         />
       </div>
+
+      {/* Contact CTA */}
+      <ContactDialog matchDisplay={matchDisplay} matchNumber={matchNumber} />
+
+      {/* Spacer for mobile sticky button */}
+      <div className="sm:hidden h-16" />
 
       {/* Chart */}
       {hasData ? (
