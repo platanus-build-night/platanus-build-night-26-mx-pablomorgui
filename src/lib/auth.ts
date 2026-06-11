@@ -144,7 +144,13 @@ export async function getSession(): Promise<SessionPayload | null> {
   const user = await getUserById(payload.userId);
   if (!user) return null;
 
-  return payload;
+  return {
+    userId: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    premiumSellerId: user.premium_seller_id,
+  };
 }
 
 export async function requireSession(): Promise<SessionPayload> {

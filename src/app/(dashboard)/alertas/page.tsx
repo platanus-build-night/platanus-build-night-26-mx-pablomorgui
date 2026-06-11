@@ -1,5 +1,5 @@
-import { getSession } from '@/lib/auth';
-import { getAlertsByUser } from '@/lib/db';
+import { getSession, getUserById } from '@/lib/auth';
+import { getAlertsByUser, getAllMatches } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import { AlertsList } from './alerts-list';
 
@@ -10,7 +10,11 @@ export default async function AlertasPage() {
     redirect('/login');
   }
 
-  const alerts = await getAlertsByUser(session.userId);
+  const [alerts, matches, user] = await Promise.all([
+    getAlertsByUser(session.userId),
+    getAllMatches(),
+    getUserById(session.userId),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -21,7 +25,11 @@ export default async function AlertasPage() {
         </p>
       </div>
 
-      <AlertsList alerts={alerts} />
+      <AlertsList
+        alerts={alerts}
+        matches={matches}
+        userWhatsApp={user?.whatsapp_number ?? null}
+      />
     </div>
   );
 }
