@@ -2,6 +2,7 @@ import { scrypt, timingSafeEqual, randomBytes } from 'node:crypto';
 import { promisify } from 'node:util';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
+import { unstable_cache } from 'next/cache';
 import { getSupabase } from './supabase';
 
 const scryptAsync = promisify(scrypt);
@@ -81,7 +82,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   return data as User;
 }
 
-export async function getUserById(id: string): Promise<User | null> {
+async function fetchUserById(id: string): Promise<User | null> {
   const { data, error } = await getSupabase()
     .from('users')
     .select('*')
@@ -90,6 +91,15 @@ export async function getUserById(id: string): Promise<User | null> {
 
   if (error || !data) return null;
   return data as User;
+}
+
+export async function getUserById(id: string): Promise<User | null> {
+  const getCachedUser = unstable_cache(
+    () => fetchUserById(id),
+    [`user-${id}`],
+    { revalidate: 60 }
+  );
+  return getCachedUser();
 }
 
 export async function login(

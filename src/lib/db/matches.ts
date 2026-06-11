@@ -1,7 +1,8 @@
+import { unstable_cache } from 'next/cache';
 import { getSupabase } from '../supabase';
 import type { Match } from './types';
 
-export async function getAllMatches(): Promise<Match[]> {
+async function fetchAllMatches(): Promise<Match[]> {
   const { data, error } = await getSupabase()
     .from('matches')
     .select('*')
@@ -10,6 +11,12 @@ export async function getAllMatches(): Promise<Match[]> {
   if (error) throw new Error(`Failed to fetch matches: ${error.message}`);
   return data as Match[];
 }
+
+export const getAllMatches = unstable_cache(
+  fetchAllMatches,
+  ['all-matches'],
+  { revalidate: 3600 }
+);
 
 export async function getMatchById(id: string): Promise<Match | null> {
   const { data, error } = await getSupabase()

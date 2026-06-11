@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import { getSupabase } from '../supabase';
 
 const FX_RATE = 17.3;
@@ -64,7 +65,7 @@ function calculateStats(prices: number[]): Omit<CategoryStats, 'category'> | nul
   };
 }
 
-export async function getMarketStatsForAllMatches(): Promise<Map<string, MatchPriceStats>> {
+async function fetchMarketStats(): Promise<Record<string, MatchPriceStats>> {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - 7);
   const cutoffIso = cutoffDate.toISOString();
@@ -139,7 +140,7 @@ export async function getMarketStatsForAllMatches(): Promise<Map<string, MatchPr
   }
 
   // Calculate stats per match
-  const result = new Map<string, MatchPriceStats>();
+  const result: Record<string, MatchPriceStats> = {};
 
   for (const [matchId, categoryMap] of matchOffers) {
     const cat1Prices = categoryMap.get('CAT 1') ?? [];
@@ -153,7 +154,7 @@ export async function getMarketStatsForAllMatches(): Promise<Map<string, MatchPr
     const allPrices = [...cat1Prices, ...cat2Prices, ...cat3Prices];
     const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : null;
 
-    result.set(matchId, {
+    result[matchId] = {
       matchId,
       minPrice: minPrice !== null ? Math.round(minPrice) : null,
       currency: 'USD',
@@ -161,8 +162,19 @@ export async function getMarketStatsForAllMatches(): Promise<Map<string, MatchPr
       cat2: cat2Stats ? { category: 'CAT 2', ...cat2Stats } : null,
       cat3: cat3Stats ? { category: 'CAT 3', ...cat3Stats } : null,
       offerCount: allPrices.length,
-    });
+    };
   }
 
   return result;
+}
+
+const getCachedMarketStats = unstable_cache(
+  fetchMarketStats,
+  ['market-stats'],
+  { revalidate: 300 }
+);
+
+export async function getMarketStatsForAllMatches(): Promise<Map<string, MatchPriceStats>> {
+  const cached = await getCachedMarketStats();
+  return new Map(Object.entries(cached));
 }
